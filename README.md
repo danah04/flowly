@@ -1,73 +1,176 @@
-# React + TypeScript + Vite
+# Flowly
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**An adaptive AI study companion.** Flowly plans your study session around how much energy you have right now, runs a focus timer with smart breaks, and gives you an AI coach to talk things through — backed by IBM watsonx Orchestrate.
 
-Currently, two official plugins are available:
+Built by **Team Codeminds** for the **IBM SkillsBuild AI Experiential Learning Lab**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## What it does
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Energy-based planning** — tell Flowly your energy level (low / medium / high) and it builds a study schedule tuned to it.
+- **Focus sessions** — a timer with pause/resume, smart breaks, and a "switch to a lighter task" option.
+- **AI coach** — a chat coach (powered by watsonx Orchestrate) that grounds its replies in your current energy, focus, streak, and progress, and remembers the conversation.
+- **Insights** — weekly focus hours, streaks, and goal progress at a glance.
 
-## Expanding the ESLint configuration
+The whole experience runs inside a mobile phone frame using the **Harbor** design system.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| Layer | Tools |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, Framer Motion |
+| State | Zustand |
+| Chat rendering | react-markdown + remark-breaks |
+| Backend | Node + Express |
+| AI | IBM watsonx Orchestrate (agent + IAM auth) |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## Two ways to run it
+
+Flowly has a **mock mode** and a **live mode**, chosen by an environment variable.
+
+- **Mock mode (default)** — runs entirely in the browser on local sample data. No backend, no credentials. Perfect for development and quick demos.
+- **Live mode** — the frontend talks to the Express backend, which calls your deployed IBM watsonx Orchestrate agent. Plans stay deterministic/local; the **AI coach** is what goes live.
+
+---
+
+## Quick start
+
+### 1. Install
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Run in mock mode (no setup)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Open the printed local URL. Everything works on sample data.
+
+### 3. Run in live mode (with IBM)
+
+Create a `.env` file in the project root:
+
+```bash
+# Frontend (read at build time)
+VITE_FLOWLY_MODE=live
+VITE_FLOWLY_API_BASE=/api/flowly
+
+# Backend (server only — NEVER exposed to the frontend)
+WATSONX_ORCHESTRATE_URL=https://api.<region>.watson-orchestrate.cloud.ibm.com/instances/<id>
+WATSONX_ORCHESTRATE_API_KEY=<your-api-key>
+WATSONX_ORCHESTRATE_AGENT_ID=<your-agent-id>
+PORT=8787
+```
+
+Then run the frontend and backend together:
+
+```bash
+npm run dev:live
+```
+
+The backend logs `(IBM configured)` when credentials are loaded, or `(stub mode)` when they're blank (it falls back to deterministic responses so live mode is still demoable without keys).
+
+---
+
+## Environment variables
+
+| Variable | Where | Purpose |
+|---|---|---|
+| `VITE_FLOWLY_MODE` | Frontend (build-time) | `mock` (default) or `live` |
+| `VITE_FLOWLY_API_BASE` | Frontend (build-time) | Backend path, usually `/api/flowly` |
+| `WATSONX_ORCHESTRATE_URL` | Backend | Your Orchestrate instance URL |
+| `WATSONX_ORCHESTRATE_API_KEY` | Backend | IBM Cloud API key (exchanged for an IAM token) |
+| `WATSONX_ORCHESTRATE_AGENT_ID` | Backend | The deployed Flowly agent ID |
+| `PORT` | Backend | Server port (default `8787`) |
+
+> The `VITE_*` values are **baked in at build time**. If you change them, rebuild.
+
+---
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Frontend only, mock mode |
+| `npm run dev:live` | Frontend + backend together, live mode |
+| `npm run build` | Type-check and build the frontend to `dist/` |
+| `npm start` | Run the production server (serves built `dist/` **and** the API on one origin) |
+| `npm run lint` | Lint the codebase |
+
+---
+
+## Architecture
+
+```
+Browser (React app)
+   │  flowlyApi  ── mock mode ─▶ local mock adapter
+   │             ── live mode ─▶ POST /api/flowly/chat
+   ▼
+Express backend (server/)
+   ├─ ibmClient.js    IAM token exchange + Orchestrate call
+   ├─ normalize.js    coerces IBM's reply into the Flowly contract
+   └─ stub.js         deterministic responses when IBM isn't configured
+   ▼
+IBM watsonx Orchestrate agent
+```
+
+**Key design choices**
+
+- **Plans are deterministic and local.** Changing energy never depends on the conversational agent, so the schedule is always consistent. The agent is used for the **coach** conversation only.
+- **One contract everywhere.** Every agent reply is normalized to a fixed shape (`assistantMessage`, `summary`, `planItems`, `energyLevel`, …) on both the server and the client, so raw model text can never reach the UI in an unexpected form.
+- **Conversation memory.** The coach sends prior turns plus the IBM `thread_id` on every message, so it remembers context instead of re-introducing itself.
+- **Safe fallback.** If a live IBM call fails or times out, the app degrades gracefully to local responses rather than breaking.
+
+### Project layout
+
+```
+src/
+  screens/      Today, Plan, Focus, Coach, Insights, Profile, onboarding
+  components/   UI primitives + phone-frame layout
+  state/        Zustand stores (plan, focus, coach, insights, user, navigation)
+  services/     flowlyApi (mock/live switch), normalize, mock adapter, config
+  mock/         sample tasks, plans, profile, coach data
+  types/        domain + agent contract types
+server/         Express backend (index, ibmClient, normalize, stub)
+```
+
+---
+
+## Deployment
+
+Flowly deploys as a **single web service** (e.g. on Render): the Express server serves the built frontend and the API from the same origin, so there's no CORS and only one URL to share.
+
+1. Push to GitHub (make sure `.env` is **not** committed — it's gitignored).
+2. Create a Web Service from the repo.
+   - **Build command:** `npm install && npm run build`
+   - **Start command:** `npm start`
+3. Add the environment variables from the table above in the host's dashboard (set `VITE_FLOWLY_MODE=live`; don't set `PORT` — the host provides it).
+4. Deploy and open the URL.
+
+---
+
+## Security
+
+- **Never commit `.env`.** API keys belong in your host's environment-variable settings, not in the repo.
+- The IBM key lives only on the **server** — it is never sent to or referenced by the frontend.
+- A public deployment has no authentication: anyone with the link can use your agent and consume your IBM quota. Keep demo links semi-private.
+
+---
+
+## Team
+
+**Codeminds** — IBM SkillsBuild AI Experiential Learning Lab.
+
+---
+
+## License
+
+Built for the IBM SkillsBuild program. Not licensed for production use.
