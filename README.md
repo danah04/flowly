@@ -27,15 +27,6 @@ Built by **Team Codeminds** for the **IBM SkillsBuild AI Experiential Learning L
 
 ---
 
-## Two ways to run it
-
-Flowly has a **mock mode** and a **live mode**, chosen by an environment variable.
-
-- **Mock mode (default)** — runs entirely in the browser on local sample data. No backend, no credentials. Perfect for development and quick demos.
-- **Live mode** — the frontend talks to the Express backend, which calls your deployed IBM watsonx Orchestrate agent. Plans stay deterministic/local; the **AI coach** is what goes live.
-
----
-
 ## Quick start
 
 ### 1. Install
@@ -75,21 +66,6 @@ npm run dev:live
 ```
 
 The backend logs `(IBM configured)` when credentials are loaded, or `(stub mode)` when they're blank (it falls back to deterministic responses so live mode is still demoable without keys).
-
----
-
-## Environment variables
-
-| Variable | Where | Purpose |
-|---|---|---|
-| `VITE_FLOWLY_MODE` | Frontend (build-time) | `mock` (default) or `live` |
-| `VITE_FLOWLY_API_BASE` | Frontend (build-time) | Backend path, usually `/api/flowly` |
-| `WATSONX_ORCHESTRATE_URL` | Backend | Your Orchestrate instance URL |
-| `WATSONX_ORCHESTRATE_API_KEY` | Backend | IBM Cloud API key (exchanged for an IAM token) |
-| `WATSONX_ORCHESTRATE_AGENT_ID` | Backend | The deployed Flowly agent ID |
-| `PORT` | Backend | Server port (default `8787`) |
-
-> The `VITE_*` values are **baked in at build time**. If you change them, rebuild.
 
 ---
 
@@ -144,22 +120,7 @@ server/         Express backend (index, ibmClient, normalize, stub)
 
 ## Deployment
 
-Flowly deploys as a **single web service** (e.g. on Render): the Express server serves the built frontend and the API from the same origin, so there's no CORS and only one URL to share.
-
-1. Push to GitHub (make sure `.env` is **not** committed — it's gitignored).
-2. Create a Web Service from the repo.
-   - **Build command:** `npm install && npm run build`
-   - **Start command:** `npm start`
-3. Add the environment variables from the table above in the host's dashboard (set `VITE_FLOWLY_MODE=live`; don't set `PORT` — the host provides it).
-4. Deploy and open the URL.
-
----
-
-## Security
-
-- **Never commit `.env`.** API keys belong in your host's environment-variable settings, not in the repo.
-- The IBM key lives only on the **server** — it is never sent to or referenced by the frontend.
-- A public deployment has no authentication: anyone with the link can use your agent and consume your IBM quota. Keep demo links semi-private.
+URL: https://flowly-bkia.onrender.com
 
 ---
 
