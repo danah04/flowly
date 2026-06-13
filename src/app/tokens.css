@@ -1,0 +1,88 @@
+/* Flowly design tokens — Harbor theme (spec §6)
+   These CSS variables are the single source of truth for color.
+   Tailwind maps its color names to these in tailwind.config.js. */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Color — Harbor. Stored as RGB channels so Tailwind opacity
+     modifiers (bg-primary/25 etc.) composite correctly. */
+  --color-primary: 91 124 153; /* #5b7c99 */
+  --color-primary-dark: 70 97 120; /* #466178 */
+  --color-secondary: 224 166 161; /* #e0a6a1 */
+  --color-bg: 247 244 241; /* #f7f4f1 */
+  --color-surface: 255 255 255; /* #ffffff */
+  --color-ink: 40 48 58; /* #28303a */
+  --color-muted: 107 114 128; /* #6b7280 */
+  --color-success: 168 195 166; /* #a8c3a6 */
+  --color-warning: 216 178 106; /* #d8b26a */
+  --color-hairline: 236 231 226; /* #ece7e2 */
+
+  /* Difficulty pill tints (derived; not given as hex in sources) */
+  --diff-easy-bg: #eaf0ea;
+  --diff-easy-fg: #5e7d5c;
+  --diff-medium-bg: #e7eef4;
+  --diff-medium-fg: #466178;
+  --diff-hard-bg: #f6e6e4;
+  --diff-hard-fg: #a8635c;
+
+  /* Radii (spec §6) */
+  --radius-card: 24px;
+  --radius-btn: 18px;
+  --radius-pill: 999px;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Albert Sans', system-ui, sans-serif;
+  color: rgb(var(--color-ink));
+  /* Page backdrop behind the device frame */
+  background: #e9e3dd;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Visible keyboard focus for all interactive elements (mouse clicks stay clean
+   via :focus-visible). Box-shadow ring works with rounded corners. */
+:where(button, a, input, textarea, select, [role='switch'], [tabindex]):focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgb(var(--color-surface)),
+    0 0 0 4px rgb(var(--color-primary));
+  border-radius: 12px;
+}
+
+::selection {
+  background: rgb(var(--color-primary) / 0.18);
+}
+
+/* Hide scrollbars inside the phone screen while keeping scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
