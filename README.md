@@ -13,8 +13,6 @@ Built by **Team Codeminds** for the **IBM SkillsBuild AI Experiential Learning L
 - **AI coach** — a chat coach (powered by watsonx Orchestrate) that grounds its replies in your current energy, focus, streak, and progress, and remembers the conversation.
 - **Insights** — weekly focus hours, streaks, and goal progress at a glance.
 
-The whole experience runs inside a mobile phone frame using the **Harbor** design system.
-
 ---
 
 ## Tech stack
